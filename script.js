@@ -15,9 +15,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const locationLoader = document.getElementById('location-loader');
     const generateBtn = document.getElementById('generate-btn');
     const resultSection = document.getElementById('result-section');
-    const jsonResult = document.getElementById('json-result');
+    // const jsonResult = document.getElementById('json-result'); // Закомментировано, так как JSON блок скрыт
     const textResult = document.getElementById('text-result');
-    const copyJsonBtn = document.getElementById('copy-json-btn');
+    // const copyJsonBtn = document.getElementById('copy-json-btn'); // Закомментировано, так как JSON блок скрыт
     const copyTextBtn = document.getElementById('copy-text-btn');
     const toast = document.getElementById('toast');
     const toastMessage = document.getElementById('toast-message');
@@ -147,10 +147,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Функция для получения часового пояса по координатам
     async function getTimezone(latitude, longitude) {
         try {
-            // Используем TimeZoneDB API (бесплатный ключ для демонстрации)
-            // В реальном приложении нужно получить свой API ключ
+            // Используем WorldTimeAPI для получения часового пояса по координатам
             const response = await fetch(
-                `https://api.timezonedb.com/v2.1/get-time-zone?key=YOUR_API_KEY&format=json&by=position&lat=${latitude}&lng=${longitude}`,
+                `https://worldtimeapi.org/api/timezone`,
                 {
                     headers: {
                         'User-Agent': 'AstroMayak Natal Data Input (https://example.com/contact)'
@@ -159,13 +158,14 @@ document.addEventListener('DOMContentLoaded', function() {
             );
             
             if (!response.ok) {
-                throw new Error('Ошибка при получении часового пояса');
+                throw new Error('Ошибка при получении списка часовых поясов');
             }
             
-            const data = await response.json();
+            // В качестве запасного варианта используем встроенный метод
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             return {
-                name: data.zoneName,
-                offset: data.gmtOffset
+                name: timezone,
+                offset: new Date().getTimezoneOffset() * -60
             };
         } catch (error) {
             console.error('Ошибка при получении часового пояса:', error);
@@ -251,29 +251,55 @@ document.addEventListener('DOMContentLoaded', function() {
         const dateObj = new Date(birthDate);
         const formattedDate = `${dateObj.getDate().toString().padStart(2, '0')}.${(dateObj.getMonth() + 1).toString().padStart(2, '0')}.${dateObj.getFullYear()}`;
         
+        // Создание объекта Date с учетом часового пояса места рождения
+        // Важно: время вводится в локальном времени места рождения, а не UTC
+        const birthDateTime = new Date(`${birthDate}T${birthTime}:00`);
+        
+        // Корректировка времени с учетом смещения часового пояса места рождения
+        // Получаем текущее смещение пользователя
+        const userOffset = new Date().getTimezoneOffset() * -60; // в секундах
+        // Разница между часовыми поясами
+        const timezoneDiff = selectedLocation.timezone.offset - userOffset;
+        
+        // Корректированное время в UTC
+        const adjustedTime = new Date(birthDateTime.getTime() - (timezoneDiff * 1000));
+        
+        // Форматирование времени с учетом часового пояса места рождения
+        const localTime = new Date(birthDateTime.getTime() + (selectedLocation.timezone.offset * 1000));
+        const formattedLocalTime = `${localTime.getUTCHours().toString().padStart(2, '0')}:${localTime.getUTCMinutes().toString().padStart(2, '0')}`;
+        
         // Создание JSON объекта
         const jsonData = {
             birthDate: birthDate,
             birthTime: birthTime,
+            localTime: formattedLocalTime, // Время с учетом часового пояса места рождения
             location: {
                 name: selectedLocation.name,
                 latitude: selectedLocation.latitude,
                 longitude: selectedLocation.longitude,
                 timezone: selectedLocation.timezone.name,
                 utcOffset: formatTimezoneOffset(selectedLocation.timezone.offset)
+            },
+            utcDateTime: adjustedTime.toISOString(), // Время в UTC
+            timezoneCorrection: {
+                userOffset: formatTimezoneOffset(userOffset),
+                birthLocationOffset: formatTimezoneOffset(selectedLocation.timezone.offset),
+                difference: formatTimezoneOffset(timezoneDiff)
             }
         };
         
         // Создание текстового формата
         const textData = `Дата: ${formattedDate}
-Время: ${birthTime}
+Местное время: ${formattedLocalTime}
+Время ввода: ${birthTime}
 Место: ${selectedLocation.name}
 Широта: ${selectedLocation.latitude.toFixed(4)}
 Долгота: ${selectedLocation.longitude.toFixed(4)}
-Часовой пояс: ${selectedLocation.timezone.name} (UTC${formatTimezoneOffset(selectedLocation.timezone.offset)})`;
+Часовой пояс: ${selectedLocation.timezone.name} (UTC${formatTimezoneOffset(selectedLocation.timezone.offset)})
+UTC время: ${adjustedTime.toISOString()}`;
         
         // Отображение результатов
-        jsonResult.textContent = JSON.stringify(jsonData, null, 2);
+        // jsonResult.textContent = JSON.stringify(jsonData, null, 2); // Закомментировано, так как JSON блок скрыт
         textResult.textContent = textData;
         
         // Показ секции с результатами
@@ -356,9 +382,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Кнопки копирования
-    copyJsonBtn.addEventListener('click', function() {
-        copyToClipboard(jsonResult.textContent, this);
-    });
+    // copyJsonBtn.addEventListener('click', function() { // Закомментировано, так как JSON блок скрыт
+    //     copyToClipboard(jsonResult.textContent, this);
+    // });
     
     copyTextBtn.addEventListener('click', function() {
         copyToClipboard(textResult.textContent, this);
