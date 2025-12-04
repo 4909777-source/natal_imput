@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Глобальные переменные
     let selectedLocation = null;
     let debounceTimer = null;
+    let resultGenerated = false; // Флаг для отслеживания сгенерированного результата
     
     // Элементы DOM
     const form = document.getElementById('natal-form');
@@ -264,6 +265,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Валидация формы
         validateForm();
+        
+        // Обновляем результат, если он уже был сгенерирован
+        updateResult();
     }
     
     // Функция для форматирования смещения часового пояса
@@ -274,9 +278,20 @@ document.addEventListener('DOMContentLoaded', function() {
         return `${sign}${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
     }
     
+    // Функция для обновления результатов при изменении данных
+    function updateResult() {
+        if (!resultGenerated || !validateForm()) {
+            return;
+        }
+        generateResult();
+    }
+    
     // Функция для генерации результата
     function generateResult() {
         if (!validateForm()) return;
+        
+        // Устанавливаем флаг, что результат сгенерирован
+        resultGenerated = true;
         
         const birthDate = birthDateInput.value;
         const birthTime = birthTimeInput.value;
@@ -374,10 +389,16 @@ UTC время: ${adjustedTime.toISOString()}`;
     // Обработчики событий
     
     // Ввод даты
-    birthDateInput.addEventListener('change', validateForm);
+    birthDateInput.addEventListener('change', function() {
+        validateForm();
+        updateResult(); // Обновляем результат, если он уже был сгенерирован
+    });
     
     // Ввод времени
-    birthTimeInput.addEventListener('change', validateForm);
+    birthTimeInput.addEventListener('change', function() {
+        validateForm();
+        updateResult(); // Обновляем результат, если он уже был сгенерирован
+    });
     
     // Ввод местоположения с debounce
     birthLocationInput.addEventListener('input', function() {
@@ -512,5 +533,17 @@ UTC время: ${adjustedTime.toISOString()}`;
             const locations = await searchLocationsWithCache(query);
             showLocationDropdown(locations);
         }, 500);
+    });
+    
+    // Добавляем обработчик для сброса результатов при очистке поля местоположения
+    birthLocationInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        
+        if (query === '' && resultGenerated) {
+            // Если поле очищено и результат был сгенерирован,
+            // скрываем результаты, так как форма теперь невалидна
+            resultSection.classList.add('hidden');
+            resultGenerated = false;
+        }
     });
 });
