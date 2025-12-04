@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  natal-data-input:
+    build: .
+    container_name: natal-data-input
+    restart: unless-stopped
+    networks:
+      - shared_network  # Используем общую сеть с другими сервисами
+    labels:
+      # Включаем Traefik для этого сервиса
+      - "traefik.enable=true"
+      
+      # Правило маршрутизации для домена natal.astromayak.ru
+      - "traefik.http.routers.natal-data-input.rule=Host(`natal.astromayak.ru`)"
+      
+      # Используем HTTPS и HTTP endpoints
+      - "traefik.http.routers.natal-data-input.entrypoints=web,websecure"
+      
+      # Включаем TLS с автоматическим получением сертификата
+      - "traefik.http.routers.natal-data-input.tls=true"
+      - "traefik.http.routers.natal-data-input.tls.certresolver=mytlschallenge"
+      
+      # Указываем порт сервиса
+      - "traefik.http.services.natal-data-input.loadbalancer.server.port=80"
+      
+      # Подключаемся к общей сети Traefik
+      - "traefik.docker.network=shared_network"
+      
+      # CORS middleware для разрешения запросов с других доменов
+      - "traefik.http.middlewares.natal-data-input-cors.headers.accessControlAllowOriginList=*"
+      - "traefik.http.middlewares.natal-data-input-cors.headers.accessControlAllowMethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.natal-data-input-cors.headers.accessControlAllowHeaders=Content-Type,Authorization,X-API-Key"
+      - "traefik.http.middlewares.natal-data-input-cors.headers.accessControlAllowCredentials=true"
+      
+      # Security headers
+      - "traefik.http.middlewares.natal-data-input-headers.headers.SSLRedirect=true"
+      - "traefik.http.middlewares.natal-data-input-headers.headers.STSSeconds=315360000"
+      - "traefik.http.middlewares.natal-data-input-headers.headers.browserXSSFilter=true"
+      - "traefik.http.middlewares.natal-data-input-headers.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.natal-data-input-headers.headers.forceSTSHeader=true"
+      - "traefik.http.middlewares.natal-data-input-headers.headers.SSLHost=natal.astromayak.ru"
+      - "traefik.http.middlewares.natal-data-input-headers.headers.STSIncludeSubdomains=true"
+      - "traefik.http.middlewares.natal-data-input-headers.headers.STSPreload=true"
+      
+      # Применяем middleware к роутеру
+      - "traefik.http.routers.natal-data-input.middlewares=natal-data-input-cors@docker,natal-data-input-headers@docker"
+
+networks:
+  shared_network:
+    external: true  # Используем существующую внешнюю сеть Traefik

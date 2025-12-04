@@ -1,0 +1,329 @@
+/* Дополнительные стили для АстроМаяк */
+
+/* Стили для скроллбара */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 246, 0.7);
+}
+
+/* Стили для dropdown с локациями */
+.location-dropdown-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(75, 85, 99, 0.5);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.location-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.location-dropdown-item:hover {
+  background-color: rgba(139, 92, 246, 0.2);
+}
+
+.location-dropdown-item.selected {
+  background-color: rgba(139, 92, 246, 0.3);
+}
+
+.location-name {
+  font-weight: 500;
+  color: #e2e8f0;
+}
+
+.location-details {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+
+/* Анимация появления элементов */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Стили для кнопок копирования */
+.copy-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.copy-btn.copied {
+  background-color: rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.5);
+  color: rgba(34, 197, 94, 0.9);
+}
+
+.copy-btn.copied svg {
+  color: rgba(34, 197, 94, 0.9);
+}
+
+/* Эффект пульсации для кнопок */
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.5);
+  transform: scale(0);
+  animation: ripple 0.6s linear;
+  pointer-events: none;
+}
+
+/* Стили для полей ввода при фокусе */
+.input-focused {
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+}
+
+/* Стили для ошибок валидации */
+.input-error {
+  border-color: #ef4444 !important;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 4px;
+}
+
+/* Стили для секции результатов */
+.result-section {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s, transform 0.5s;
+}
+
+.result-section.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Стили для pre блоков с результатами */
+.result-pre {
+  font-family: 'Fira Code', 'Courier New', monospace;
+  background-color: rgba(15, 23, 42, 0.5);
+  border-radius: 6px;
+  padding: 16px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  line-height: 1.5;
+}
+
+/* Стили для toast уведомлений */
+.toast-enter {
+  transform: translateX(0);
+}
+
+.toast-exit {
+  transform: translateX(100%);
+}
+
+/* Стили для мобильных устройств */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .main-form {
+    padding: 1.5rem;
+  }
+  
+  .result-section {
+    padding: 1rem;
+  }
+  
+  .button-group {
+    flex-direction: column;
+  }
+  
+  .button-group button {
+    width: 100%;
+  }
+}
+
+/* Адаптивность для очень маленьких экранов */
+@media (max-width: 480px) {
+  .header h1 {
+    font-size: 2rem;
+  }
+  
+  .main-form {
+    padding: 1rem;
+  }
+  
+  .input-field {
+    padding: 0.75rem;
+  }
+  
+  .button {
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* Темная тема для выделения текста */
+::selection {
+  background-color: rgba(139, 92, 246, 0.3);
+}
+
+::-moz-selection {
+  background-color: rgba(139, 92, 246, 0.3);
+}
+
+/* Стили для индикатора загрузки */
+.loader {
+  border: 2px solid rgba(139, 92, 246, 0.2);
+  border-radius: 50%;
+  border-top: 2px solid #8b5cf6;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Стили для звездного фона */
+.stars {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: white;
+  border-radius: 50%;
+  animation: twinkle 4s infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* Стили для градиентных текстов */
+.gradient-text {
+  background: linear-gradient(90deg, #8b5cf6, #6366f1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Стили для кнопок с градиентом */
+.gradient-button {
+  background: linear-gradient(90deg, #8b5cf6, #6366f1);
+  position: relative;
+  overflow: hidden;
+}
+
+.gradient-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.gradient-button:hover::before {
+  left: 100%;
+}
+
+/* Стили для карточек с информацией */
+.info-card {
+  background: rgba(30, 41, 59, 0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.info-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.2);
+}
+
+/* Стили для анимации появления элементов при прокрутке */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in-up {
+  animation: slideInUp 0.5s ease-out;
+}
+
+/* Стили для плавающих элементов */
+.floating {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Стили для пульсирующих элементов */
+.pulse-slow {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
