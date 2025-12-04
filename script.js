@@ -147,9 +147,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Функция для получения часового пояса по координатам
     async function getTimezone(latitude, longitude) {
         try {
-            // Используем WorldTimeAPI для получения часового пояса по координатам
+            // Используем API для определения часового пояса по координатам
+            // В качестве запасного варианта используем timezoneapi.io
             const response = await fetch(
-                `https://worldtimeapi.org/api/timezone`,
+                `https://api.timezonedb.com/v2.1/get-time-zone?key=KJ8Z39QJ5K9L&format=json&by=position&lat=${latitude}&lng=${longitude}`,
                 {
                     headers: {
                         'User-Agent': 'AstroMayak Natal Data Input (https://example.com/contact)'
@@ -158,23 +159,56 @@ document.addEventListener('DOMContentLoaded', function() {
             );
             
             if (!response.ok) {
-                throw new Error('Ошибка при получении списка часовых поясов');
+                throw new Error('Ошибка при получении часового пояса');
             }
             
-            // В качестве запасного варианта используем встроенный метод
-            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            return {
-                name: timezone,
-                offset: new Date().getTimezoneOffset() * -60
-            };
+            const data = await response.json();
+            if (data.status === 'OK') {
+                return {
+                    name: data.zoneName,
+                    offset: data.gmtOffset
+                };
+            } else {
+                throw new Error('API вернул ошибку');
+            }
         } catch (error) {
             console.error('Ошибка при получении часового пояса:', error);
-            // В качестве запасного варианта используем встроенный метод
+            
+            // Пробуем альтернативный API
             try {
-                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                const response = await fetch(
+                    `https://timezoneapi.io/api/timezone/?latitude=${latitude}&longitude=${longitude}`,
+                    {
+                        headers: {
+                            'User-Agent': 'AstroMayak Natal Data Input (https://example.com/contact)'
+                        }
+                    }
+                );
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.data && data.data.timezone) {
+                        return {
+                            name: data.data.timezone.id,
+                            offset: data.data.datetime.offset_seconds
+                        };
+                    }
+                }
+            } catch (altError) {
+                console.error('Ошибка при использовании альтернативного API:', altError);
+            }
+            
+            // В крайнем случае пытаемся определить часовой пояс по координатам
+            // Это приблизительный метод, но лучше чем ничего
+            try {
+                // Приблизительное определение часового пояса по долготе
+                // Каждые 15 градусов долготы ≈ 1 час
+                const approximateTimezone = Math.round(longitude / 15);
+                const offset = approximateTimezone * 3600;
+                
                 return {
-                    name: timezone,
-                    offset: new Date().getTimezoneOffset() * -60
+                    name: `UTC${offset >= 0 ? '+' : ''}${offset / 3600}`,
+                    offset: offset
                 };
             } catch (e) {
                 return {
